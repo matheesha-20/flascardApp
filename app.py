@@ -103,7 +103,7 @@ if st.session_state.game_round < len(st.session_state.current_set):
             if st.session_state.is_retake_mode:
                 st.error(f"වැරදියි! නිවැරදි පිළිතුර: {curr_word['si']} ❌")
             else:
-                st.error(f"වැරදියි! ❌")
+                st.error(f"වැරදියි! ❌ නිවැරදි පිළිතුර: {curr_word['si']}")
         
         time.sleep(1.2) # Feedback එක පේන්න පොඩි වෙලාවක් දෙනවා
         
