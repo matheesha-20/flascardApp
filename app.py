@@ -7,7 +7,7 @@ if 'word_pool' not in st.session_state:
     st.session_state.word_pool = [
         {"it": "Buongiorno", "pr": "බොන්ජෝර්නෝ", "si": "සුබ උදෑසනක්"},
         {"it": "Grazie", "pr": "ග්‍රාත්සියේ", "si": "ස්තූතියි"},
-        {"it": "Prego", "pr": "ප්‍රේගෝ", "si": "කමක් නැහැ"},
+        {"it": "Prego", "pr": "ප්‍රේගෝ", "si": "කමක් නැහැ(Welcome)"},
         {"it": "Dov'è...?", "pr": "දොවේ", "si": "කොහේද...?"},
         {"it": "Acqua", "pr": "අක්ක්වා", "si": "වතුර"},
         {"it": "Ho fame", "pr": "ඕ ෆාමේ", "si": "මට බඩගිනියි"},
