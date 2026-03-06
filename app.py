@@ -34,7 +34,7 @@ st.markdown(f"""
 <div style="background-color: #f0f2f6; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #008C45;">
     <h2 style="color: #CD212A;">{current_word['it']}</h2>
 </div>
-""", unsafe_allow_config=True)
+""", unsafe_allow_html=True)
 
 if st.button("Show Meaning / තේරුම බලන්න"):
     st.session_state.show_answer = True
