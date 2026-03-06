@@ -1,49 +1,64 @@
 import streamlit as st
 import random
 
-# Factory එකේදී ඕන වෙන වචන සෙට් එක
+# වචන මාලාව
 data = [
-    {"it": "Lavoro", "en": "Work", "si": "වැඩ"},
-    {"it": "Macchina", "en": "Machine", "si": "මැෂින් එක"},
-    {"it": "Valvola", "en": "Valve", "si": "වෑල්ව් එක"},
-    {"it": "Attrezzi", "en": "Tools", "si": "උපකරණ"},
-    {"it": "Pezzi", "en": "Parts", "si": "කෑලි"},
-    {"it": "Veloce", "en": "Fast", "si": "වේගයෙන්"},
-    {"it": "Piano", "en": "Slow", "si": "හෙමින්"},
-    {"it": "Guasto", "en": "Broken", "si": "කැඩිලා"},
-    {"it": "Pericolo", "en": "Danger", "si": "අන්තරාය"},
-    {"it": "Sicurezza", "en": "Safety", "si": "ආරක්ෂාව"},
-    {"it": "Accendere", "en": "Turn on", "si": "පණගන්වන්න"},
-    {"it": "Spegnere", "en": "Turn off", "si": "නිවා දමන්න"},
+    {"it": "Lavoro", "si": "වැඩ"},
+    {"it": "Macchina", "si": "මැෂින් එක"},
+    {"it": "Valvola", "si": "වෑල්ව් එක"},
+    {"it": "Attrezzi", "si": "උපකරණ"},
+    {"it": "Pezzi", "si": "කෑලි"},
+    {"it": "Veloce", "si": "වේගයෙන්"},
+    {"it": "Piano", "si": "හෙමින්"},
+    {"it": "Guasto", "si": "කැඩිලා"},
+    {"it": "Pericolo", "si": "අන්තරාය"},
+    {"it": "Sicurezza", "si": "ආරක්ෂාව"},
+    {"it": "Accendere", "si": "පණගන්වන්න"},
+    {"it": "Spegnere", "si": "නිවා දමන්න"},
 ]
 
-st.set_page_config(page_title="Italy Helper", page_icon="🇮🇹")
+st.set_page_config(page_title="Italy Quiz", page_icon="🇮🇹")
 
-st.title("🇮🇹 Italy Flashcards")
-st.write("වචනය මතකද බලලා තේරුම චෙක් කරන්න.")
+st.title("🇮🇹 Italy Word Quiz")
 
-# Session state එක පාවිච්චි කරන්නේ වචනය මාරු වුණත් මතක තියාගන්න
-if 'index' not in st.session_state:
+# Session state පවත්වා ගැනීම
+if 'index' not in st.session_state or 'options' not in st.session_state:
     st.session_state.index = random.randint(0, len(data)-1)
-    st.session_state.show_answer = False
+    
+    # හරි උත්තරයයි, තව වැරදි උත්තරයකුයි තෝරගන්නවා
+    correct_ans = data[st.session_state.index]['si']
+    wrong_ans = random.choice([item['si'] for item in data if item['si'] != correct_ans])
+    
+    opts = [correct_ans, wrong_ans]
+    random.shuffle(opts) # Shuffle කරනවා උත්තර දෙක මාරු වෙන්න
+    st.session_state.options = opts
+    st.session_state.answered = False
 
 current_word = data[st.session_state.index]
 
-# Display Card
+# ඉතාලි වචනය පෙන්වන Card එක
 st.markdown(f"""
-<div style="background-color: #f0f2f6; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #008C45;">
-    <h2 style="color: #CD212A;">{current_word['it']}</h2>
+<div style="background-color: #f0f2f6; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #008C45; margin-bottom: 20px;">
+    <h1 style="color: #CD212A; margin:0;">{current_word['it']}</h1>
+    <p style="color: #555;">මේකේ තේරුම මොකක්ද?</p>
 </div>
 """, unsafe_allow_html=True)
 
-if st.button("Show Meaning / තේරුම බලන්න"):
-    st.session_state.show_answer = True
+# Options පෙන්වීම
+for option in st.session_state.options:
+    if st.button(option, use_container_width=True):
+        st.session_state.answered = True
+        st.session_state.selected = option
 
-if st.session_state.show_answer:
-    st.success(f"🇬🇧 English: {current_word['en']}")
-    st.info(f"🇱🇰 Sinhala: {current_word['si']}")
-
-if st.button("Next Word / ඊළඟ වචනය"):
-    st.session_state.index = random.randint(0, len(data)-1)
-    st.session_state.show_answer = False
-    st.rerun()
+# උත්තරය පරීක්ෂා කිරීම
+if st.session_state.answered:
+    if st.session_state.selected == current_word['si']:
+        st.success(f"නියමයි! ' {current_word['it']} ' කියන්නේ '{current_word['si']}' තමයි. ✅")
+    else:
+        st.error(f"වැරදියි! නිවැරදි තේරුම: {current_word['si']} ❌")
+    
+    if st.button("ඊළඟ වචනය ➡️"):
+        # Reset කරලා අලුත් වචනයක් ගන්නවා
+        del st.session_state.index
+        del st.session_state.options
+        st.rerun()
