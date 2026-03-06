@@ -18,29 +18,33 @@ def load_data():
 
 words = load_data()
 
-st.set_page_config(page_title="Italy Challenge Pro", page_icon="🇮🇹")
+st.set_page_config(page_title="Italy Learning Pro", page_icon="🇮🇹")
 
 if not words:
     st.warning("දත්ත ලැබුණේ නැහැ. කරුණාකර Link එක පරීක්ෂා කරන්න.")
     st.stop()
 
+# --- Session States Initialize ---
 if 'word_pool' not in st.session_state:
     st.session_state.word_pool = words
 
-# --- Session States ---
 if 'game_round' not in st.session_state:
     st.session_state.game_round = 0
     st.session_state.score = 0
-    st.session_state.current_set = random.sample(st.session_state.word_pool, min(len(st.session_state.word_pool), 10))
+    st.session_state.wrong_list = []
+    st.session_state.is_retake_mode = False # වැරදුණු ටික විතරක් කරන වටයද?
+    st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
     st.session_state.is_answered = False
-    st.session_state.show_retry = False # වැරදුණොත් Retry පෙන්වන්න
 
 st.title("🇮🇹 Italy Master Challenge")
 
+# Game Logic
 if st.session_state.game_round < len(st.session_state.current_set):
     curr_word = st.session_state.current_set[st.session_state.game_round]
     
-    st.write(f"ප්‍රශ්නය: {st.session_state.game_round + 1} / 10")
+    # Header එක වෙනස් වෙනවා වටය අනුව
+    mode_text = "වැරදුණු වචන පුහුණුව" if st.session_state.is_retake_mode else "ප්‍රශ්න වටය"
+    st.subheader(f"{mode_text}: {st.session_state.game_round + 1} / {len(st.session_state.current_set)}")
     
     it_word = curr_word.get('it', 'N/A')
     pr_word = curr_word.get('pr', '')
@@ -65,29 +69,45 @@ if st.session_state.game_round < len(st.session_state.current_set):
     cols = st.columns(2)
     for i, opt in enumerate(st.session_state.current_options):
         with cols[i % 2]:
-            # පිළිතුරක් දීල නම් බටන් ටික Disable කරනවා (Retry වෙලාවේදී ඇරෙන්න)
-            is_disabled = st.session_state.is_answered and not st.session_state.show_retry
-            
-            if st.button(opt, use_container_width=True, key=f"btn_{st.session_state.game_round}_{opt}", disabled=is_disabled):
+            if st.button(opt, use_container_width=True, key=f"btn_{st.session_state.game_round}_{opt}", disabled=st.session_state.is_answered):
+                st.session_state.is_answered = True
                 if opt == si_word:
-                    st.session_state.is_answered = True
-                    st.session_state.show_retry = False
                     st.success("නිවැරදියි! ✅")
-                    time.sleep(1)
-                    st.session_state.score += 1
-                    st.session_state.game_round += 1
-                    st.session_state.is_answered = False
-                    if 'current_options' in st.session_state: del st.session_state.current_options
-                    st.rerun()
+                    if not st.session_state.is_retake_mode:
+                        st.session_state.score += 1
                 else:
-                    st.error("වැරදියි! ❌ නැවත උත්සාහ කරන්න.")
-                    st.session_state.show_retry = True
+                    st.error(f"වැරදියි! ❌ නිවැරදි පිළිතුර: {si_word}")
+                    # වැරදුණු වචනය wrong_list එකට දාගන්නවා
+                    if curr_word not in st.session_state.wrong_list:
+                        st.session_state.wrong_list.append(curr_word)
+                
+                time.sleep(1.5)
+                st.session_state.game_round += 1
+                st.session_state.is_answered = False
+                if 'current_options' in st.session_state: del st.session_state.current_options
+                st.rerun()
 
+# වටය අවසානය
 else:
-    st.balloons()
-    st.success(f"වටය අවසන්! ඔබේ ලකුණු: {st.session_state.score}/10")
-    if st.button("අලුත් වටයක් ආරම්භ කරන්න"):
-        st.session_state.game_round = 0
-        st.session_state.score = 0
-        st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
-        st.rerun()
+    # වැරදුණු වචන තිබේ නම් ඒවා නැවත කරවීම
+    if st.session_state.wrong_list:
+        st.warning(f"වටය අවසන්! ඔබේ ලකුණු: {st.session_state.score}/10. දැන් වැරදුණු වචන {len(st.session_state.wrong_list)} නැවත පුහුණු වෙමු.")
+        
+        if st.button("වැරදුණු වචන ටික ආයෙත් කරමු 🔄"):
+            st.session_state.current_set = list(st.session_state.wrong_list)
+            st.session_state.wrong_list = [] # List එක reset කරනවා ආයේ වැරදුණොත් දාගන්න
+            st.session_state.game_round = 0
+            st.session_state.is_retake_mode = True # දැන් පුහුණු වටය
+            st.rerun()
+            
+    # ඔක්කොම හරි නම් අලුත් වටයකට යෑම
+    else:
+        st.balloons()
+        st.success("නියමයි! ඔබ සියලුම වචන නිවැරදිව ඉගෙන ගත්තා. 🏆")
+        if st.button("ඊළඟ අලුත් වචන 10 පටන් ගන්න ➡️"):
+            st.session_state.game_round = 0
+            st.session_state.score = 0
+            st.session_state.wrong_list = []
+            st.session_state.is_retake_mode = False
+            st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
+            st.rerun()
