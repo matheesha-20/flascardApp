@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 
-sheet_url = "https://docs.google.com/spreadsheets/d/1ztn3fdk38Qv9pNrtgplCaqqqB1uAOYEldEeFpnKS8fw/edit?usp=sharing"
+sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQEYl7N7muoi3zY5fgFDBWo8gPrNKJvj8sJQQYmm-nAyF1qE6DMgl2a3cuNsbbrzPMIht-JervgZkMn/pub?output=csv"
 
 # වචන මාලාව (තව වචන ඕන තරම් මෙතනට ඇඩ් කරපන්)
 @st.cache_data # මේකෙන් කරන්නේ හැමතිස්සෙම sheet එක download නොකර data ටික මතක තියාගන්න එක
