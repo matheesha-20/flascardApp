@@ -1,23 +1,19 @@
 import streamlit as st
+import pandas as pd
 import random
-import time
+
+sheet_url = "https://docs.google.com/spreadsheets/d/1ztn3fdk38Qv9pNrtgplCaqqqB1uAOYEldEeFpnKS8fw/edit?usp=sharing"
 
 # වචන මාලාව (තව වචන ඕන තරම් මෙතනට ඇඩ් කරපන්)
+@st.cache_data # මේකෙන් කරන්නේ හැමතිස්සෙම sheet එක download නොකර data ටික මතක තියාගන්න එක
+def load_data():
+    df = pd.read_csv(sheet_url)
+    # DataFrame එක dictionary list එකකට හරවනවා
+    return df.to_dict('records')
+
+# දැන් word_pool එකට ගන්නේ අර sheet එකේ data
 if 'word_pool' not in st.session_state:
-    st.session_state.word_pool = [
-        {"it": "Buongiorno", "pr": "බොන්ජෝර්නෝ", "si": "සුබ උදෑසනක්"},
-        {"it": "Grazie", "pr": "ග්‍රාත්සියේ", "si": "ස්තූතියි"},
-        {"it": "Prego", "pr": "ප්‍රේගෝ", "si": "කමක් නැහැ(Welcome)"},
-        {"it": "Dov'è...?", "pr": "දොවේ", "si": "කොහේද...?"},
-        {"it": "Acqua", "pr": "අක්ක්වා", "si": "වතුර"},
-        {"it": "Ho fame", "pr": "ඕ ෆාමේ", "si": "මට බඩගිනියි"},
-        {"it": "Lavoro", "pr": "ලවෝරෝ", "si": "වැඩ"},
-        {"it": "Guasto", "pr": "ගුවාස්තෝ", "si": "කැඩිලා"},
-        {"it": "Veloce", "pr": "වෙලෝචේ", "si": "වේගයෙන්"},
-        {"it": "Piano", "pr": "පියානෝ", "si": "හෙමින්"},
-        {"it": "Sinistra", "pr": "සිනිස්ත්‍රා", "si": "වම"},
-        {"it": "Destra", "pr": "දෙස්ත්‍රා", "si": "දකුණ"}
-    ]
+    st.session_state.word_pool = load_data()
 
 st.set_page_config(page_title="Italy Challenge Pro", page_icon="🇮🇹")
 
@@ -103,7 +99,7 @@ if st.session_state.game_round < len(st.session_state.current_set):
             if st.session_state.is_retake_mode:
                 st.error(f"වැරදියි! නිවැරදි පිළිතුර: {curr_word['si']} ❌")
             else:
-                st.error(f"වැරදියි! ❌ \t නිවැරදි පිළිතුර: {curr_word['si']}")
+                st.error(f"වැරදියි! ❌ \t\t නිවැරදි පිළිතුර: {curr_word['si']}")
         
         time.sleep(1.2) # Feedback එක පේන්න පොඩි වෙලාවක් දෙනවා
         
