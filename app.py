@@ -1,106 +1,138 @@
 import streamlit as st
 import random
+import time
 
-# වචන මාලාව (Factory + Daily Use)
+# වචන මාලාව (තව වචන ඕන තරම් මෙතනට ඇඩ් කරපන්)
 if 'word_pool' not in st.session_state:
     st.session_state.word_pool = [
         {"it": "Buongiorno", "pr": "බොන්ජෝර්නෝ", "si": "සුබ උදෑසනක්"},
-        {"it": "Come stai?", "pr": "කොමේ ස්තායි", "si": "කොහොමද සැප දුක්?"},
         {"it": "Grazie", "pr": "ග්‍රාත්සියේ", "si": "ස්තූතියි"},
-        {"it": "Prego", "pr": "ප්‍රේගෝ", "si": "සාදරයෙන් පිළිගනිමි / කමක් නැහැ"},
+        {"it": "Prego", "pr": "ප්‍රේගෝ", "si": "කමක් නැහැ"},
         {"it": "Dov'è...?", "pr": "දොවේ", "si": "කොහේද...?"},
-        {"it": "Quanto costa?", "pr": "ක්වන්තෝ කොස්තා", "si": "ගණන කීයද?"},
         {"it": "Acqua", "pr": "අක්ක්වා", "si": "වතුර"},
-        {"it": "Pane", "pr": "පානේ", "si": "පාන්"},
-        {"it": "Andiamo", "pr": "අන්ඩියාමෝ", "si": "යමු"},
-        {"it": "Ho fame", "pr": "ඕ ෆාමේ", "si": "මට බඩගිනියි"},
+        {"it": "Ho fame", "pr": "ඕ ෆාමේ", "si": "බඩගිනියි"},
         {"it": "Lavoro", "pr": "ලවෝරෝ", "si": "වැඩ"},
-        {"it": "Macchina", "pr": "මක්කිනා", "si": "මැෂින් එක"},
-        {"it": "Valvola", "pr": "වල්වොලා", "si": "වෑල්ව් එක"},
-        {"it": "Pezzi", "pr": "පෙත්සි", "si": "කෑලි"},
         {"it": "Guasto", "pr": "ගුවාස්තෝ", "si": "කැඩිලා"},
         {"it": "Veloce", "pr": "වෙලෝචේ", "si": "වේගයෙන්"},
         {"it": "Piano", "pr": "පියානෝ", "si": "හෙමින්"},
         {"it": "Sinistra", "pr": "සිනිස්ත්‍රා", "si": "වම"},
-        {"it": "Destra", "pr": "දෙස්ත්‍රා", "si": "දකුණ"},
-        {"it": "Aiuto", "pr": "අයූතෝ", "si": "උදව්"}
+        {"it": "Destra", "pr": "දෙස්ත්‍රා", "si": "දකුණ"}
     ]
 
-st.set_page_config(page_title="Italy 10-Step Challenge", page_icon="🇮🇹")
+st.set_page_config(page_title="Italy Challenge Pro", page_icon="🇮🇹")
 
-# Game State පවත්වා ගැනීම
+# CSS පාවිච්චි කරලා බටන් වල පාට වෙනස් කරන විදිහ
+st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        height: 3em;
+        font-size: 18px;
+    }
+    /* හරි උත්තරේ කොළ පාටට */
+    .correct-btn {
+        background-color: #28a745 !important;
+        color: white !important;
+    }
+    /* වැරදි උත්තරේ රතු පාටට */
+    .wrong-btn {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Initialize Session States
 if 'game_round' not in st.session_state:
-    st.session_state.game_round = 1  # වචන 10න් කීවෙනි එකද?
+    st.session_state.game_round = 0
     st.session_state.score = 0
-    st.session_state.game_over = False
-    # මේ වටයට වචන 10ක් අහඹු ලෙස තෝරාගන්නවා
+    st.session_state.wrong_list = []
+    st.session_state.is_retake_mode = False
     st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
+    st.session_state.selected_option = None
+    st.session_state.is_answered = False
 
-def reset_game():
-    st.session_state.game_round = 1
-    st.session_state.score = 0
-    st.session_state.game_over = False
-    st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
-    st.rerun()
+st.title("🇮🇹 Italy Master Challenge")
 
-st.title("🇮🇹 Italy 10-Word Challenge")
-
-if not st.session_state.game_over:
-    # දැනට තියෙන වචනය
-    current_word = st.session_state.current_set[st.session_state.game_round - 1]
+# Main Game
+if st.session_state.game_round < len(st.session_state.current_set):
+    curr_word = st.session_state.current_set[st.session_state.game_round]
     
-    # Progress Bar
-    st.write(f"ප්‍රශ්නය: {st.session_state.game_round} / 10")
-    st.progress(st.session_state.game_round / 10)
-
-    # Display Card
+    st.write(f"ප්‍රශ්නය: {st.session_state.game_round + 1} / {len(st.session_state.current_set)}")
+    
+    # Question Card
     st.markdown(f"""
-    <div style="background-color: #f0f2f6; padding: 25px; border-radius: 15px; text-align: center; border-left: 10px solid #008C45; border-right: 10px solid #CD212A;">
-        <h1 style="color: #333; margin:0;">{current_word['it']}</h1>
-        <p style="color: #666; font-size: 1.2em;">({current_word['pr']})</p>
-    </div>
+        <div style="background-color: #f8f9fa; padding: 25px; border-radius: 15px; text-align: center; border-left: 10px solid #008C45; border-right: 10px solid #CD212A; margin-bottom: 20px;">
+            <h1 style="color: #333; margin:0;">{curr_word['it']}</h1>
+            <p style="color: #666;">({curr_word['pr']})</p>
+        </div>
     """, unsafe_allow_html=True)
 
-    # Options 4ක් සෑදීම
+    # Options හදන එක (මෙතන තමයි කලින් වැරැද්ද හැදුවේ)
     if 'current_options' not in st.session_state:
-        correct = current_word['si']
-        others = [w['si'] for w in st.session_state.word_pool if w['si'] != correct]
-        wrong_options = random.sample(others, 3)
-        all_opts = wrong_options + [correct]
+        correct_ans = curr_word['si']
+        # හරි එක නැතුව අනිත් ඒවගෙන් 3ක් ගන්නවා
+        wrong_candidates = [w['si'] for w in st.session_state.word_pool if w['si'] != correct_ans]
+        wrong_options = random.sample(wrong_candidates, 3)
+        all_opts = wrong_options + [correct_ans]
         random.shuffle(all_opts)
         st.session_state.current_options = all_opts
 
-    # Buttons පෙන්වීම
+    # බටන්ස් පෙන්වීම
     cols = st.columns(2)
     for i, opt in enumerate(st.session_state.current_options):
         with cols[i % 2]:
-            if st.button(opt, use_container_width=True, key=opt):
-                if opt == current_word['si']:
-                    st.toast("නියමයි! ✅", icon="🎉")
+            # බටන් එකේ පාට තීරණය කිරීම
+            button_key = f"btn_{st.session_state.game_round}_{opt}"
+            
+            if st.button(opt, use_container_width=True, key=button_key, disabled=st.session_state.is_answered):
+                st.session_state.selected_option = opt
+                st.session_state.is_answered = True
+                
+                if opt == curr_word['si']:
                     st.session_state.score += 1
                 else:
-                    st.toast(f"වැරදියි! නිවැරදි: {current_word['si']} ❌")
-                
-                # ඊළඟ වටයට සූදානම් වීම
-                if st.session_state.game_round < 10:
-                    st.session_state.game_round += 1
-                    del st.session_state.current_options
-                    st.rerun()
-                else:
-                    st.session_state.game_over = True
-                    st.rerun()
+                    if curr_word not in st.session_state.wrong_list:
+                        st.session_state.wrong_list.append(curr_word)
+                st.rerun()
 
+    # පිළිතුර දුන් පසු Feedback එක පෙන්වීම
+    if st.session_state.is_answered:
+        if st.session_state.selected_option == curr_word['si']:
+            st.success(f"නිවැරදියි! ✅")
+        else:
+            if st.session_state.is_retake_mode:
+                st.error(f"වැරදියි! නිවැරදි පිළිතුර: {curr_word['si']} ❌")
+            else:
+                st.error(f"වැරදියි! ❌")
+        
+        time.sleep(1.2) # Feedback එක පේන්න පොඩි වෙලාවක් දෙනවා
+        
+        # ඊළඟ ප්‍රශ්නයට යෑම
+        st.session_state.game_round += 1
+        st.session_state.is_answered = False
+        st.session_state.selected_option = None
+        if 'current_options' in st.session_state:
+            del st.session_state.current_options
+        st.rerun()
+
+# Game Over / Retake Logic
 else:
-    # Game Over Screen
-    st.balloons()
-    st.success(f"වැඩේ ඉවරයි! ලකුණු සංඛ්‍යාව: {st.session_state.score} / 10")
-    
-    if st.session_state.score == 10:
-        st.write("🔥ඔක්කොම හරි!")
-    elif st.session_state.score > 5:
-        st.write("හොඳයි, තව ටිකක් ට්‍රයි කරමු!")
+    if st.session_state.wrong_list:
+        st.warning(f"වටය අවසන්! ඔබේ ලකුණු: {st.session_state.score}/10. වැරදුණු වචන {len(st.session_state.wrong_list)} නැවත පුහුණු වෙමු.")
+        if st.button("වැරදුණු වචන නැවත කරන්න 🔄"):
+            st.session_state.current_set = list(st.session_state.wrong_list)
+            st.session_state.wrong_list = []
+            st.session_state.game_round = 0
+            st.session_state.score = 0
+            st.session_state.is_retake_mode = True
+            st.rerun()
     else:
-        st.write("කමක් නැහැ, ආයෙත් කරලා බලමුද?")
-
-    if st.button("අලුත් වටයක් පටන් ගන්න (New Words)"):
-        reset_game()
+        st.balloons()
+        st.success("සුපිරිම තමයි! ඔබ සියල්ල නිවැරදිව කළා! 🏆")
+        if st.button("අලුත් වටයක් පටන් ගන්න"):
+            st.session_state.game_round = 0
+            st.session_state.score = 0
+            st.session_state.wrong_list = []
+            st.session_state.is_retake_mode = False
+            st.session_state.current_set = random.sample(st.session_state.word_pool, 10)
+            st.rerun()
