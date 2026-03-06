@@ -93,12 +93,12 @@ if not st.session_state.game_over:
 else:
     # Game Over Screen
     st.balloons()
-    st.success(f"වැඩේ ඉවරයි! උඹේ ලකුණු සංඛ්‍යාව: {st.session_state.score} / 10")
+    st.success(f"වැඩේ ඉවරයි! ලකුණු සංඛ්‍යාව: {st.session_state.score} / 10")
     
     if st.session_state.score == 10:
-        st.write("🔥 උඹ නම් කැරියෙක්ම තමයි! ඔක්කොම හරි!")
+        st.write("🔥ඔක්කොම හරි!")
     elif st.session_state.score > 5:
-        st.write("හොඳයි මචං, තව ටිකක් ට්‍රයි කරමු!")
+        st.write("හොඳයි, තව ටිකක් ට්‍රයි කරමු!")
     else:
         st.write("කමක් නැහැ, ආයෙත් කරලා බලමුද?")
 
